@@ -38,6 +38,17 @@ if codes and not st.session_state.get("ok"):
         else: st.error("That invite code isn't valid. Please check it and try again.")
     st.stop()
 
+if not st.session_state.get("intro_seen"):
+    header()
+    st.markdown("<h2 style='text-align:center'>Welcome! Meet TAP 🦉</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center'>Watch this short intro first. It's about 10 seconds.</p>", unsafe_allow_html=True)
+    _l, _m, _r = st.columns([1, 6, 1])
+    with _m:
+        st.video("assets/intro.mp4")
+        if st.button("Let's get started", type="primary", width='stretch'):
+            st.session_state.intro_seen = True; st.rerun()
+    st.stop()
+
 prov = llm.get_provider()
 header()
 st.caption("Upload your school's lesson-plan template → get it filled in → download.")
@@ -60,7 +71,8 @@ if not st.session_state.get("outs"):
         st.markdown("**Hi! I'm TAP!**")
         st.markdown("Teachers didn't become teachers to spend their evenings fighting lesson-plan templates. "
                     "TAP gives teachers back something incredibly valuable: **time**.")
-        st.video("assets/intro.mp4")
+        if st.button("▶ Watch the intro"):
+            st.session_state.intro_seen = False; st.rerun()
         st.markdown('<span class="tap-tag">AI does the planning work. Teachers make the decisions.</span>', unsafe_allow_html=True)
 if "mode" not in st.session_state: st.session_state.mode = "new"
 k1, k2 = st.columns(2)
