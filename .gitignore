@@ -1,0 +1,10 @@
+.venv/
+data/
+__pycache__/
+*.pyc
+*.db
+*.sqlite*
+.pilot_secrets.toml
+.streamlit/secrets.toml
+.env
+samples/
