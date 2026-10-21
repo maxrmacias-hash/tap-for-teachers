@@ -41,11 +41,13 @@ if codes and not st.session_state.get("ok"):
 if not st.session_state.get("intro_seen"):
     header()
     st.markdown("<h2 style='text-align:center'>Welcome! Meet TAP 🦉</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center'>Watch this short intro first. It's about 10 seconds.</p>", unsafe_allow_html=True)
-    _l, _m, _r = st.columns([1, 6, 1])
+    st.markdown("<p style='text-align:center'>Watch this short intro first. It's about a minute and a half.</p>", unsafe_allow_html=True)
+    _l, _m, _r = st.columns([1, 3, 1])
     with _m:
+        if st.button("Let's get started", type="primary", width='stretch', key="start_top"):
+            st.session_state.intro_seen = True; st.rerun()
         st.video("assets/intro.mp4")
-        if st.button("Let's get started", type="primary", width='stretch'):
+        if st.button("Let's get started", type="primary", width='stretch', key="start_bottom"):
             st.session_state.intro_seen = True; st.rerun()
     st.stop()
 
