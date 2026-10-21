@@ -1,0 +1,8 @@
+.venv
+data
+samples
+.git
+.pilot_secrets.toml
+.streamlit/secrets.toml
+__pycache__
+*.pyc
