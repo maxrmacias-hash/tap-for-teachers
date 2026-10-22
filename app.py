@@ -6,10 +6,25 @@ from PIL import Image
 st.set_page_config(page_title="TAP for Teachers", page_icon=Image.open("assets/owl_face.png"), layout="wide")
 st.markdown("""<style>.tap-sub{color:#1B2A4A;font-size:1.25rem;font-weight:600;margin-top:-0.8rem}
 .tap-tag{display:inline-block;background:#F2B51C;color:#1B2A4A;padding:2px 10px;border-radius:8px;font-weight:600}
-h1{color:#1B2A4A}</style>""", unsafe_allow_html=True)
+h1{color:#1B2A4A}
+.tap-steps{border:2px solid #1B2A4A;border-radius:12px;padding:10px 14px;margin:10px 0 16px;background:#F7F9FC}
+.tap-steps-h{color:#1B2A4A;font-weight:700;margin-bottom:6px}
+.tap-step{display:inline-flex;align-items:center;gap:6px;margin:4px 14px 4px 0;color:#1B2A4A;font-size:0.95rem}
+.tap-dot{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;font-weight:700;font-size:0.85rem}</style>""", unsafe_allow_html=True)
 def header():
     st.title("TAP for Teachers")
     st.markdown('<div class="tap-sub">Teacher Assistant for Planning</div><span class="tap-tag">Less Planning. More Teaching.</span>', unsafe_allow_html=True)
+
+STEPS=["Enter your invite code","Watch the short intro","Choose New or Experienced Teacher","Fill in your lesson details","Generate & review","Download your Word lesson plan"]
+def steps(cur):
+    items=""
+    for i,t in enumerate(STEPS,1):
+        if i<cur: bg,fg,mk="#1B4F9C","#fff","✓"
+        elif i==cur: bg,fg,mk="#F2B51C","#1B2A4A",str(i)
+        else: bg,fg,mk="#E6ECF5","#1B2A4A",str(i)
+        w="700" if i==cur else "500"
+        items+=f'<div class="tap-step"><span class="tap-dot" style="background:{bg};color:{fg}">{mk}</span><span style="font-weight:{w}">{t}</span></div>'
+    st.markdown(f'<div class="tap-steps"><div class="tap-steps-h">Step {cur} of {len(STEPS)} &middot; How TAP works</div>{items}</div>', unsafe_allow_html=True)
 
 # ---- pilot access gate (settings from st.secrets, falling back to environment variables)
 from zoneinfo import ZoneInfo
@@ -32,16 +47,18 @@ except ValueError:
     exp_date = None
 if exp_date and datetime.datetime.now(ZoneInfo("America/New_York")).date() > exp_date: _ended()
 if codes and not st.session_state.get("ok"):
-    st.image("assets/hero.jpg", width=360); header(); c = st.text_input("Invite code")
+    st.image("assets/hero.jpg", width=360); header(); steps(1)
+    st.markdown("**Step 1:** Type the invite code you were given, then click **Enter**.")
+    c = st.text_input("Invite code", placeholder="e.g. TAP-XXXX")
     if st.button("Enter"):
         if c.strip().upper() in codes: st.session_state.ok = True; st.rerun()
         else: st.error("That invite code isn't valid. Please check it and try again.")
     st.stop()
 
 if not st.session_state.get("intro_seen"):
-    header()
+    header(); steps(2)
     st.markdown("<h2 style='text-align:center'>Welcome! Meet TAP 🦉</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center'>Watch this short intro first. It's about a minute and a half.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center'><b>Step 2:</b> Watch this short intro (about 1½ minutes), then click <b>Let's get started</b>.</p>", unsafe_allow_html=True)
     _l, _m, _r = st.columns([1, 3, 1])
     with _m:
         if st.button("Let's get started", type="primary", width='stretch', key="start_top"):
@@ -52,7 +69,7 @@ if not st.session_state.get("intro_seen"):
     st.stop()
 
 prov = llm.get_provider()
-header()
+header(); steps(3 if not st.session_state.get("outs") else 5)
 st.caption("Upload your school's lesson-plan template → get it filled in → download.")
 if isinstance(prov, llm.DemoProvider):
     st.warning("DEMO MODE: content is placeholder text so you can test the full flow.")
@@ -77,6 +94,7 @@ if not st.session_state.get("outs"):
             st.session_state.intro_seen = False; st.rerun()
         st.markdown('<span class="tap-tag">AI does the planning work. Teachers make the decisions.</span>', unsafe_allow_html=True)
 if "mode" not in st.session_state: st.session_state.mode = "new"
+st.markdown("### Step 3: Choose how you'd like to plan")
 k1, k2 = st.columns(2)
 with k1:
     st.image("assets/new_teacher_card.png", width='stretch')
@@ -89,6 +107,7 @@ with k2:
         st.session_state.mode = "experienced"; st.rerun()
     st.caption("TAP turns years of knowledge, lessons, activities, and resources into a personal teaching library you can use again and again.")
 mkey = st.session_state.mode
+st.markdown("### Step 4: Fill in your lesson details below, then generate (Step 5) and download your Word plan (Step 6)")
 st.markdown("#### " + ("New Teacher mode — I'll walk you through objectives, standards, differentiation, timing, exit ticket and tips." if mkey=="new" else "Experienced Teacher mode — reuse and adapt your past lessons, in your voice."))
 ROOT = os.path.dirname(os.path.abspath(__file__))
 store.seed_samples(ROOT)
